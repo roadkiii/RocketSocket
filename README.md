@@ -3,6 +3,14 @@ Quick setup of socket.io and basic chat functionality
 
 Modified chat example from https://github.com/socketio/socket.io
 
+Its possible to:
+* Connect a user to the chat
+* Send messages
+* Indicate that someone started to type
+* Indicate that someone stopped typing
+
+Every event broadcasts to all clients that something happened.
+
 ## Quick setup
 
 ### Server
