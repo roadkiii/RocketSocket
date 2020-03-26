@@ -50,6 +50,8 @@ Emit to socket
 this.socketClient.emit('connect user', this.state.name);
 ```
 
+* [React example component](/examples)
+
 #### Listen for .on
 * connect user (connect user to chat)
 * user joined (a user has joined the chat)
