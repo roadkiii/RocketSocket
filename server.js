@@ -3,8 +3,15 @@ var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var cors = require('cors');
 
+const { 
+  users, 
+  addUser, 
+  removeUser, 
+  getUser, 
+  getUsersInRoom 
+} = require('./users.js');
+
 var numUsers = 0;
-var users = [];
 
 app.use(cors());
 
@@ -23,24 +30,24 @@ http.listen(4000, function(){
 io.on('connection', (socket) => {
   var addedUser = false;
   
-  socket.on('new message', (data) => {
+  socket.on('new message', (message) => {
     socket.broadcast.emit('new message', {
       username: socket.username,
-      message: data
+      message: message
     });
   });
 
-  socket.on('connect user', (username) => {
-    if (addedUser) return;
+  socket.on('connect user', (name) => {
 
-    socket.username = username;
+    socket.name = name;
     ++numUsers;
-    users.push(username);
+    const userAdded = addUser(name);
 
-    addedUser = true;
-    socket.emit('connect user', {
-      numUsers: numUsers
-    });
+    if (userAdded) {
+      socket.emit('connect user', {
+        numUsers: numUsers
+      });
+    }
 
     socket.broadcast.emit('user joined', {
       username: socket.username,
