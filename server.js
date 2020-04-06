@@ -28,36 +28,48 @@ http.listen(4000, function(){
 
 
 io.on('connection', (socket) => {
-  var addedUser = false;
   
   socket.on('new message', (message) => {
-    socket.broadcast.emit('new message', {
-      username: socket.username,
+
+    const user = getUser(socket.id);
+
+    io.to(user.room).emit('new message', {
+      user: user.name,
       message: message
-    });
+      }
+    );
   });
 
-  socket.on('connect user', (name) => {
+  socket.on('connect user', ({name, room}, callback) => {
 
-    socket.name = name;
+    const { error, user } = addUser({id: socket.id, name: name, room: room });
+
+    if(error) return callback(error);
+
+    socket.emit('admin message', { 
+      user: 'ADMIN', 
+      message: `Vi välkomnar ${user.name.toUpperCase()} till ${user.room}`
+      }
+    );
+
+    socket.broadcast.to(user.room).emit('user joined', {
+      user: 'ADMIN',
+      message: `${user.name.toUpperCase()} har anslutit sig`
+      }
+    );
+
+    socket.join(user.room);
     ++numUsers;
-    const userAdded = addUser(name);
-
-    if (userAdded) {
-      socket.emit('connect user', {
-        numUsers: numUsers
-      });
-    }
-
-    socket.broadcast.emit('user joined', {
-      username: socket.username,
-      numUsers: numUsers
-    });
+    callback();
   });
 
   socket.on('typing', () => {
-    socket.broadcast.emit('typing', {
-      username: socket.username
+
+    const user = getUser(socket.id);
+
+    socket.broadcast.to(user.room).emit('typing', {
+      user: user.name,
+      message: `${user.name.toUpperCase()} skriver `
     });
   });
 
@@ -68,13 +80,19 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    if (addedUser) {
-      --numUsers;
 
-      socket.broadcast.emit('user left', {
-        username: socket.username,
-        numUsers: numUsers
+    --numUsers;
+    const user = getUser(socket.id);
+    
+    if (user) {
+      socket.broadcast.to(user.room).emit('user left', {
+        user: 'ADMIN',
+        message: `${user.name.toUpperCase()} har lämnat`
       });
+  
+      removeUser(socket.id);
     }
+    
+
   });
 });
