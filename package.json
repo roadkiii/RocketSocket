@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon server.js",
+    "start-rooms": "nodemon serverWithRooms.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

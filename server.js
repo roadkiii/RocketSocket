@@ -16,7 +16,7 @@ app.use('/users', function (req, res, next) {
 })
 
 http.listen(4000, function(){
-  console.log('listening on *:3000');
+  console.log('listening on *:4000');
 });
 
 
@@ -48,7 +48,8 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.on('typing', () => {
+  socket.on('typing', (value) => {
+    console.log('value', value)
     socket.broadcast.emit('typing', {
       username: socket.username
     });
