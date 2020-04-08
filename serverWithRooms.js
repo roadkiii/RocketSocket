@@ -75,6 +75,11 @@ io.on('connection', (socket) => {
     rooms.push(newRoom);
     socket.join(numRooms);
 
+    socket.emit('room created', {
+      roomId: numRooms,
+      participants: users
+    });
+
     socket.broadcast.emit('room created', {
       roomId: numRooms,
       participants: users
