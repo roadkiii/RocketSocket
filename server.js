@@ -26,32 +26,36 @@ http.listen(4000, function(){
   console.log('listening on *:3000');
 });
 
-
 io.on('connection', (socket) => {
   
   socket.on('new message', (message) => {
 
     const user = getUser(socket.id);
-
-    io.to(user.room).emit('new message', {
-      user: user.name,
-      message: message
-      }
-    );
+    if (user) {
+      io.to(user.room).emit('new message', {
+        user: user.name,
+        message: message
+        }
+      );
+    };
   });
 
   socket.on('connect user', ({name, room}, callback) => {
-
+    console.log('new user')
     const { error, user } = addUser({id: socket.id, name: name, room: room });
 
+    console.log(user);
+
     if(error) return callback(error);
-
-    socket.emit('admin message', { 
-      user: 'ADMIN', 
-      message: `Vi välkomnar ${user.name.toUpperCase()} till ${user.room}`
-      }
-    );
-
+    
+    if (user) {
+      socket.emit('admin message', { 
+        user: 'ADMIN', 
+        message: `Vi välkomnar ${user.name.toUpperCase()} till ${user.room}`
+        }
+      );
+    }
+    
     socket.broadcast.to(user.room).emit('user joined', {
       user: 'ADMIN',
       message: `${user.name.toUpperCase()} har anslutit sig`
@@ -60,7 +64,7 @@ io.on('connection', (socket) => {
 
     socket.join(user.room);
     ++numUsers;
-    callback();
+    console.log(users);
   });
 
   socket.on('typing', () => {
@@ -74,8 +78,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('stop typing', () => {
-    socket.broadcast.emit('stop typing', {
-      username: socket.username
+    const user = getUser(socket.id);
+
+    socket.broadcast.to(user.room).emit('stop typing', {
+      user: user.name,
+      message: `${user.name.toUpperCase()} slutat skriva `
     });
   });
 
