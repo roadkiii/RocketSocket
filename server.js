@@ -34,7 +34,8 @@ io.on('connection', (socket) => {
     if (user) {
       io.to(user.room).emit('new message', {
         user: user.name,
-        message: message
+        message: message,
+        date: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds(),
         }
       );
     };
@@ -51,14 +52,16 @@ io.on('connection', (socket) => {
     if (user) {
       socket.emit('admin message', { 
         user: 'ADMIN', 
-        message: `Vi välkomnar ${user.name.toUpperCase()} till ${user.room}`
+        message: `Vi välkomnar ${user.name.toUpperCase()} till ${user.room}`,
+        date: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds(),
         }
       );
     }
     
     socket.broadcast.to(user.room).emit('user joined', {
       user: 'ADMIN',
-      message: `${user.name.toUpperCase()} har anslutit sig`
+      message: `${user.name.toUpperCase()} har anslutit sig`,
+      date: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds(),
       }
     );
 
@@ -73,7 +76,7 @@ io.on('connection', (socket) => {
 
     socket.broadcast.to(user.room).emit('typing', {
       user: user.name,
-      message: `${user.name.toUpperCase()} skriver `
+      message: `${user.name.toUpperCase()} skriver `,
     });
   });
 
@@ -82,7 +85,7 @@ io.on('connection', (socket) => {
 
     socket.broadcast.to(user.room).emit('stop typing', {
       user: user.name,
-      message: `${user.name.toUpperCase()} slutat skriva `
+      message: `${user.name.toUpperCase()} slutat skriva `,
     });
   });
 
@@ -94,7 +97,8 @@ io.on('connection', (socket) => {
     if (user) {
       socket.broadcast.to(user.room).emit('user left', {
         user: 'ADMIN',
-        message: `${user.name.toUpperCase()} har lämnat`
+        message: `${user.name.toUpperCase()} har lämnat`,
+        date: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds(),
       });
   
       removeUser(socket.id);
