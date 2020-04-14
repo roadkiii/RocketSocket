@@ -49,7 +49,6 @@ io.on('connection', (socket) => {
    * @emits roomId id of the room where the message belongs
    */
   socket.on('new message', ({roomId, message}) => {
-
     messages.push({
       username: socket.username,
       message: message,
@@ -61,6 +60,13 @@ io.on('connection', (socket) => {
       message: message,
       roomId: roomId
     });
+
+    socket.emit('new message',  {
+      username: socket.username,
+      message: message,
+      roomId: roomId
+    });
+    
   });
 
   /**
