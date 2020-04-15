@@ -12,6 +12,12 @@ const {
 } = require('./users.js');
 
 var numUsers = 0;
+var rooms = [
+  {
+    roomName: 'mainRoom',
+    users: users
+  },
+];
 
 app.use(cors());
 
@@ -22,8 +28,14 @@ app.use('/users', function (req, res, next) {
   });
 })
 
+app.use('/rooms', (req, res, next) => {
+  res.send({
+    rooms: rooms
+  });
+})
+
 http.listen(4000, function(){
-  console.log('listening on *:3000');
+  console.log('listening on *:4000');
 });
 
 io.on('connection', (socket) => {
@@ -42,7 +54,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('connect user', ({name, room}, callback) => {
-    console.log('new user')
+
     const { error, user } = addUser({id: socket.id, name: name, room: room });
 
     console.log(user);
@@ -52,7 +64,7 @@ io.on('connection', (socket) => {
     if (user) {
       socket.emit('admin message', { 
         user: 'ADMIN', 
-        message: `Vi välkomnar ${user.name.toUpperCase()} till ${user.room}`,
+        message: `Välkommen till ${user.room},  ${user.name.toUpperCase()}`,
         date: new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds(),
         }
       );
@@ -70,13 +82,35 @@ io.on('connection', (socket) => {
     console.log(users);
   });
 
+  // socket.on('create room', ({_users, roomName}) => {
+  //   const newRoom = {roomName: roomName, participants: _users};
+    
+  //   let usersInRoom = [];
+
+  //   _users.forEach(_user => {
+  //     usersInRoom.push(users.find( user => user.name === _user));
+  //   });
+    
+  //   rooms.push(newRoom);
+  //   socket.join(roomName);
+
+  //   socket.emit('room created', {
+  //     roomName: roomName,
+  //     participants: _users
+  //   });
+
+  //   socket.broadcast.emit('room created', {
+  //     roomId: numRooms,
+  //     participants: _users
+  //   });
+  // })
+
   socket.on('typing', () => {
 
     const user = getUser(socket.id);
 
     socket.broadcast.to(user.room).emit('typing', {
       user: user.name,
-      message: `${user.name.toUpperCase()} skriver `,
     });
   });
 
@@ -85,7 +119,6 @@ io.on('connection', (socket) => {
 
     socket.broadcast.to(user.room).emit('stop typing', {
       user: user.name,
-      message: `${user.name.toUpperCase()} slutat skriva `,
     });
   });
 
